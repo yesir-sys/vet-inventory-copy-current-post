@@ -1,0 +1,11 @@
+.bg-pending { background-color: #ffc107; }
+.bg-completed { background-color: #28a745; }
+.bg-cancelled { background-color: #dc3545; }
+
+.shadow-vet {
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15);
+}
+
+.bg-vet-gradient {
+    background: linear-gradient(45deg, #4e73df 0%, #224abe 100%);
+}
