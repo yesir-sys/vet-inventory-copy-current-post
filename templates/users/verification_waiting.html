@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-container">
+        <div class="card auth-card animate-card">
+            <div class="card-body p-5 text-center">
+                <i class="fas fa-envelope-open-text fa-3x text-primary mb-4"></i>
+                <h4 class="auth-title mb-3">Check Your Email</h4>
+                <p class="text-muted mb-4">We've sent a verification link to your email address. Please check your inbox and click the link to verify your account.</p>
+                <div class="alert alert-info" role="alert">
+                    <i class="fas fa-info-circle me-2"></i>
+                    After verifying your email, an administrator will need to approve your account before you can login.
+                </div>
+                <a href="{% url 'login' %}" class="btn btn-primary btn-lg w-100 hover-lift">
+                    <i class="fas fa-sign-in-alt me-2"></i>Return to Login
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .auth-wrapper {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+    }
+
+    .auth-container {
+        width: 100%;
+        max-width: 450px;
+    }
+
+    .auth-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .hover-lift {
+        transition: all 0.3s ease;
+    }
+
+    .hover-lift:hover {
+        transform: translateY(-2px);
+    }
+
+    .animate-card {
+        animation: slideIn 0.5s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+{% endblock %}

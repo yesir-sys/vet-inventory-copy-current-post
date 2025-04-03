@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-container">
+        <div class="card auth-card animate-card">
+            <div class="card-body p-5 text-center">
+                <i class="fas fa-user-clock fa-3x text-warning mb-4"></i>
+                <h4 class="auth-title mb-3">Account Pending Approval</h4>
+                <p class="text-muted mb-4">Your account is currently awaiting administrator approval. You'll be able to login once your account has been approved.</p>
+                <div class="alert alert-info" role="alert">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Please contact the administrator if this takes longer than expected.
+                </div>
+                <a href="{% url 'login' %}" class="btn btn-primary btn-lg w-100 hover-lift">
+                    <i class="fas fa-sign-in-alt me-2"></i>Return to Login
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* ... same styles as verification_waiting.html ... */
+</style>
+{% endblock %}

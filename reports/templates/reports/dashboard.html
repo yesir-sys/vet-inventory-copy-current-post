@@ -1,0 +1,454 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <!-- Header with Action Buttons -->
+    <div class="card shadow-blur border-0 mb-4">
+        <div class="card-body p-3">
+            <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-chart-pie fa-2x text-primary me-3"></i>
+                    <div>
+                        <h2 class="mb-0">Analytics Dashboard</h2>
+                        <p class="text-muted mb-0">Comprehensive inventory analysis</p>
+                    </div>
+                </div>
+                <div class="d-flex gap-3">
+                    <select id="dateRange" class="form-select" style="width: 200px;">
+                        <option value="7" {% if selected_days == 7 %}selected{% endif %}>Last 7 Days</option>
+                        <option value="30" {% if selected_days == 30 or not selected_days %}selected{% endif %}>Last 30 Days</option>
+                        <option value="90" {% if selected_days == 90 %}selected{% endif %}>Last 3 Months</option>
+                    </select>
+                    <!-- Add Report Generation Buttons -->
+                    <div class="btn-group">
+                        <a href="{% url 'vet_supplies:transaction_history' %}" class="btn btn-info">
+                            <i class="fas fa-history me-2"></i>Transaction History
+                        </a>
+                        <a href="{% url 'vet_supplies:vreports' %}?format=excel&type=all" class="btn btn-success">
+                            <i class="fas fa-file-excel me-2"></i>Vet Report
+                        </a>
+                        <a href="{% url 'office_supplies:reports' %}?format=excel&type=all" class="btn btn-primary">
+                            <i class="fas fa-file-excel me-2"></i>Office Report
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs for Vet/Office Switch -->
+    <ul class="nav nav-pills nav-fill mb-4">
+        <li class="nav-item">
+            <a class="nav-link {% if active_tab == 'vet' %}active{% endif %}" 
+               id="vet-tab" data-bs-toggle="pill" href="#vet-content">
+                <i class="fas fa-syringe me-2"></i>Veterinary Supplies
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if active_tab == 'office' %}active{% endif %}" 
+               id="office-tab" data-bs-toggle="pill" href="#office-content">
+                <i class="fas fa-briefcase me-2"></i>Office Supplies
+            </a>
+        </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content">
+        <!-- Vet Supplies Content -->
+        <div class="tab-pane fade {% if active_tab == 'vet' %}show active{% endif %}" id="vet-content">
+            <div class="row g-4">
+                <!-- Stats Cards Row -->
+                <div class="col-md-3">
+                    <a href="{% url 'vet_supplies:supply-list' %}" class="text-decoration-none card-link">
+                        <div class="card shadow-blur hover-lift border-start border-4 border-primary">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <div class="icon-shape bg-primary text-white rounded-3">
+                                        <i class="fas fa-capsules"></i>
+                                    </div>
+                                    <div class="dropdown">
+                                        <button class="btn btn-link btn-sm" data-bs-toggle="dropdown">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item" href="#"><i class="fas fa-download me-2"></i>Download Report</a></li>
+                                            <li><a class="dropdown-item" href="#"><i class="fas fa-chart-line me-2"></i>View Trends</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <h6 class="text-muted mb-2">Total Items</h6>
+                                <h3 class="mb-0 text-primary">{{ vet_stats.total|intcomma }}</h3>
+                                <div class="mt-2 text-success small">
+                                    <i class="fas fa-arrow-up me-1"></i>+{{ vet_stats.stock_in }} this month
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-3">
+                    <a href="{% url 'reports:view-low-stock' supply_type='vet' %}" class="text-decoration-none card-link">
+                        <div class="card shadow-blur hover-lift border-start border-4 border-primary">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Low Stock Items</h6>
+                                        <h3 class="mb-0 text-danger">{{ vet_stats.low_stock|intcomma }}</h3>
+                                    </div>
+                                    <div class="icon-shape bg-danger text-white rounded-3">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-3">
+                    <a href="{% url 'reports:view-movements' supply_type='vet' movement_type='IN' %}" class="text-decoration-none card-link">
+                        <div class="card shadow-blur hover-lift border-start border-4 border-primary">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Stock In </h6>
+                                        <h3 class="mb-0 text-success">{{ vet_stats.stock_in|intcomma }}</h3>
+                                    </div>
+                                    <div class="icon-shape bg-success text-white rounded-3">
+                                        <i class="fas fa-arrow-down"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-3">
+                    <a href="{% url 'reports:view-movements' supply_type='vet' movement_type='OUT' %}" class="text-decoration-none card-link">
+                        <div class="card shadow-blur hover-lift border-start border-4 border-primary">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Stock Out </h6>
+                                        <h3 class="mb-0 text-warning">{{ vet_stats.stock_out|intcomma }}</h3>
+                                    </div>
+                                    <div class="icon-shape bg-warning text-white rounded-3">
+                                        <i class="fas fa-arrow-up"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="col-md-8">
+                    <div class="card shadow-blur border-0">
+                        <div class="card-header bg-transparent border-0">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Stock Movement Trends</h5>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-primary {% if selected_timeframe == 'daily' %}active{% endif %}" data-timeframe="daily" onclick="updateChart('daily', 'vet')">Daily</button>
+                                    <button class="btn btn-outline-primary {% if selected_timeframe == 'weekly' %}active{% endif %}" data-timeframe="weekly" onclick="updateChart('weekly', 'vet')">Weekly</button>
+                                    <button class="btn btn-outline-primary {% if selected_timeframe == 'monthly' %}active{% endif %}" data-timeframe="monthly" onclick="updateChart('monthly', 'vet')">Monthly</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="vetTrendsChart" height="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card shadow-blur border-0">
+                        <div class="card-header bg-transparent border-0">
+                            <h5 class="mb-0">Stock Distribution</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="vetDistributionChart" height="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Office Supplies Content -->
+        <div class="tab-pane fade {% if active_tab == 'office' %}show active{% endif %}" id="office-content">
+            <div class="row g-4">
+                <!-- Stats Cards Row -->
+                <div class="col-md-3">
+                    <a href="{% url 'office_supplies:supply-list' %}" class="text-decoration-none card-link">
+                        <div class="card shadow-blur border-0 hover-lift border-start border-success border-4">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Total Items</h6>
+                                        <h3 class="mb-0 text-success">{{ office_stats.total|intcomma }}</h3>
+                                    </div>
+                                    <div class="icon-shape bg-success text-white rounded-3">
+                                        <i class="fas fa-box"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-3">
+                    <a href="{% url 'reports:view-low-stock' supply_type='office' %}" class="text-decoration-none card-link">
+                        <div class="card shadow-blur border-0 hover-lift border-start border-success border-4">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Low Stock Items</h6>
+                                        <h3 class="mb-0 text-danger">{{ office_stats.low_stock|intcomma }}</h3>
+                                    </div>
+                                    <div class="icon-shape bg-danger text-white rounded-3">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-3">
+                    <a href="{% url 'reports:view-movements' supply_type='office' movement_type='IN' %}" class="text-decoration-none card-link">
+                        <div class="card shadow-blur border-0 hover-lift border-start border-success border-4">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Stock In </h6>
+                                        <h3 class="mb-0 text-success">{{ office_stats.stock_in|intcomma }}</h3>
+                                    </div>
+                                    <div class="icon-shape bg-success text-white rounded-3">
+                                        <i class="fas fa-arrow-down"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-3">
+                    <a href="{% url 'reports:view-movements' supply_type='office' movement_type='OUT' %}" class="text-decoration-none card-link">
+                        <div class="card shadow-blur border-0 hover-lift border-start border-success border-4">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6 class="text-muted mb-2">Stock Out </h6>
+                                        <h3 class="mb-0 text-warning">{{ office_stats.stock_out|intcomma }}</h3>
+                                    </div>
+                                    <div class="icon-shape bg-warning text-white rounded-3">
+                                        <i class="fas fa-arrow-up"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="col-md-8">
+                    <div class="card shadow-blur border-0">
+                        <div class="card-header bg-transparent border-0">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Stock Movement Trends</h5>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-primary {% if selected_timeframe == 'daily' %}active{% endif %}" data-timeframe="daily" onclick="updateChart('daily', 'office')">Daily</button>
+                                    <button class="btn btn-outline-primary {% if selected_timeframe == 'weekly' %}active{% endif %}" data-timeframe="weekly" onclick="updateChart('weekly', 'office')">Weekly</button>
+                                    <button class="btn btn-outline-primary {% if selected_timeframe == 'monthly' %}active{% endif %}" data-timeframe="monthly" onclick="updateChart('monthly', 'office')">Monthly</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="officeTrendsChart" height="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card shadow-blur border-0">
+                        <div class="card-header bg-transparent border-0">
+                            <h5 class="mb-0">Stock Distribution</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="officeDistributionChart" height="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Base Styles */
+:root {
+    --chart-primary: var(--vet-primary);
+    --chart-success: #28a745;
+    --chart-warning: #ffc107;
+    --chart-danger: #dc3545;
+}
+
+.shadow-blur {
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    border-radius: 12px;
+}
+
+.hover-lift {
+    transition: all 0.3s ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+/* Nav Pills Customization */
+.nav-pills .nav-link {
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    font-weight: 500;
+    color: var(--vet-dark);
+    background: rgba(255,255,255,0.9);
+}
+
+.nav-pills .nav-link.active {
+    background: var(--vet-primary);
+    color: white;
+}
+
+/* Cards */
+.card {
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.icon-shape {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+}
+
+/* Charts */
+.chart-container {
+    position: relative;
+    margin: auto;
+}
+
+/* Dropdown Customization */
+.dropdown-menu {
+    border: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-radius: 8px;
+}
+
+.dropdown-item {
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+}
+
+.dropdown-item:hover {
+    background-color: rgba(43, 124, 133, 0.1);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .nav-pills .nav-link {
+        padding: 0.75rem 1rem;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+}
+
+.card-link {
+    display: block;
+    color: inherit;
+}
+
+.card-link:hover {
+    text-decoration: none;
+    color: inherit;
+}
+
+.card-link .card {
+    transition: all 0.3s ease;
+}
+
+.card-link:hover .card {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+}
+
+.card-link:hover .icon-shape {
+    transform: scale(1.1);
+}
+
+/* Add these styles for the report buttons */
+.btn-group .btn {
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-group .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.btn-success {
+    background-color: var(--vet-primary);
+    border-color: var(--vet-primary);
+}
+
+.btn-success:hover {
+    background-color: var(--vet-secondary);
+    border-color: var(--vet-secondary);
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{% static 'js/exports.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize charts
+    const trendData = {{ trend_data|safe }};
+    if (typeof initializeCharts === 'function') {
+        initializeCharts(trendData);
+    }
+    
+    // Handle tab changes
+    const tabLinks = document.querySelectorAll('.nav-link');
+    tabLinks.forEach(tab => {
+        tab.addEventListener('click', function(e) {
+            // Update URL with new active tab without refreshing
+            const currentUrl = new URL(window.location.href);
+            const tabId = this.id.split('-')[0]; // 'vet' or 'office'
+            currentUrl.searchParams.set('active_tab', tabId);
+            history.pushState({}, '', currentUrl.toString());
+        });
+    });
+    
+    // Date Range Change Handler
+    const dateRange = document.getElementById('dateRange');
+    if (dateRange) {
+        dateRange.addEventListener('change', function() {
+            const days = this.value;
+            const currentUrl = new URL(window.location.href);
+            
+            // Get active tab from URL params or from active tab element
+            const activeTab = currentUrl.searchParams.get('active_tab') || 
+                            document.querySelector('.nav-link.active').id.split('-')[0];
+            
+            // Update URL parameters
+            currentUrl.searchParams.set('days', days);
+            currentUrl.searchParams.set('active_tab', activeTab);
+            
+            window.location.href = currentUrl.toString();
+        });
+    }
+});
+</script>
+{% endblock %}

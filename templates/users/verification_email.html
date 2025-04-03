@@ -1,0 +1,24 @@
+{% extends 'base_email.html' %}
+
+{% block title %}Verify Your Email{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+    <h2>Verify your email address</h2>
+    <p>Hi {{ user.username }},</p>
+    <p>Thank you for signing up! Please click the button below to verify your email address:</p>
+    
+    <div style="text-align: center; margin: 30px 0;">
+        <a href="{{ protocol }}://{{ domain }}{% url 'verify_email' uidb64=uid token=token %}" 
+           style="background-color: #4CAF50; color: white; padding: 14px 28px; text-decoration: none; border-radius: 5px;">
+            Verify Email
+        </a>
+    </div>
+    
+    <p>If the button doesn't work, copy and paste this link into your browser:</p>
+    <p>{{ protocol }}://{{ domain }}{% url 'verify_email' uidb64=uid token=token %}</p>
+    
+    <p>This link will expire in 24 hours.</p>
+    <p>If you didn't sign up for an account, you can ignore this email.</p>
+</div>
+{% endblock %}

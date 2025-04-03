@@ -1,0 +1,38 @@
+{% extends "admin/login.html" %}
+{% load i18n %}
+
+{% block content %}
+{{ block.super }}
+<style>
+    .back-btn {
+        margin-left: 10px;
+        background: #6c757d;
+        color: white;
+        padding: 8px 16px;
+        border-radius: 4px;
+        text-decoration: none;
+        display: inline-block;
+    }
+    .back-btn:hover {
+        background: #5a6268;
+        color: white;
+        text-decoration: none;
+    }
+    .submit-row {
+        display: flex !important;
+        align-items: center !important;
+        padding: 10px 0 !important;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const submitRow = document.querySelector('.submit-row');
+    const backButton = document.createElement('a');
+    backButton.href = '/';
+    backButton.className = 'back-btn';
+    backButton.innerHTML = '<i class="fas fa-arrow-left"></i> Back to Site';
+    submitRow.appendChild(backButton);
+});
+</script>
+{% endblock %}
