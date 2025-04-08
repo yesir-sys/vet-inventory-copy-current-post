@@ -1,0 +1,242 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="card-title mb-0">Transaction History</h2>
+                    {% if request.GET.from_type == 'vet' %}
+                        <a href="{% url 'vet_supplies:vreports' %}" class="btn btn-link text-muted">
+                            <i class="fas fa-arrow-left me-1"></i>Back to Vet Reports
+                        </a>
+                    {% elif request.GET.from_type == 'office' %}
+                        <a href="{% url 'office_supplies:reports' %}" class="btn btn-link text-muted">
+                            <i class="fas fa-arrow-left me-1"></i>Back to Office Reports
+                        </a>
+                    {% else %}
+                        <a href="{% url 'reports:dashboard' %}" class="btn btn-link text-muted">
+                            <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+                        </a>
+                    {% endif %}
+                </div>
+                <a href="{% url 'vet_supplies:export_transactions' %}?{{ request.GET.urlencode }}" class="btn btn-success">
+                    <i class="fas fa-file-export"></i> Export
+                </a>
+            </div>
+            
+            <form method="get" class="mb-4">
+                <div class="row g-3">
+                    <div class="col-md-2">
+                        <select name="supply_type" class="form-select">
+                            <option value="">All Types</option>
+                            {% for type, label in supply_types %}
+                                <option value="{{ type }}" {% if type == selected_supply_type %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <input type="text" name="item_name" class="form-control" 
+                               placeholder="Search by item name..." 
+                               value="{{ request.GET.item_name|default:'' }}">
+                    </div>
+                    <div class="col-md-2">
+                        <select name="movement_type" class="form-select">
+                            <option value="">All Actions</option>
+                            {% for type, label in movement_types %}
+                                <option value="{{ type }}" {% if type == selected_type %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <input type="date" name="date_from" class="form-control" value="{{ request.GET.date_from|default:'' }}">
+                    </div>
+                    <div class="col-md-2">
+                        <input type="date" name="date_to" class="form-control" value="{{ request.GET.date_to|default:'' }}">
+                    </div>
+                    <div class="col-md-1">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-filter"></i>
+                        </button>
+                    </div>
+                    <!-- Add Clear Filters Button -->
+                    {% if request.GET.supply_type or request.GET.item_name or request.GET.movement_type or request.GET.date_from or request.GET.date_to %}
+                    <div class="col-md-1">
+                        <a href="{% url 'vet_supplies:transactions' %}" class="btn btn-outline-secondary w-100">
+                            <i class="fas fa-times"></i>
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </form>
+
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Item</th>
+                            <th>Action</th>
+                            <th>Quantity</th>
+                            <th>Previous Qty</th>
+                            <th>New Qty</th>
+                            <th>Processed By</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for transaction in transactions %}
+                        <tr>
+                            <td>{{ transaction.timestamp|date:"Y-m-d H:i" }}</td>
+                            <td>
+                                <span class="badge {% if transaction.content_type.model == 'vetsupply' %}bg-info{% else %}bg-secondary{% endif %}">
+                                    {{ transaction.content_type.model|title|cut:"supply" }}
+                                </span>
+                            </td>
+                            <td>{{ transaction.content_object.name }}</td>
+                            <td>
+                                <span class="badge {% if transaction.movement_type == 'IN' %}bg-success
+                                                 {% elif transaction.movement_type == 'OUT' %}bg-danger
+                                                 {% elif transaction.movement_type == 'ADJ' %}bg-warning
+                                                 {% elif transaction.movement_type == 'EDT' %}bg-info
+                                                 {% elif transaction.movement_type == 'DEL' %}bg-dark
+                                                 {% elif transaction.movement_type == 'EXP' %}bg-secondary
+                                                 {% endif %}">
+                                    {{ transaction.get_movement_type_display }}
+                                </span>
+                            </td>
+                            <td>{{ transaction.quantity }}</td>
+                            <td>{{ transaction.previous_quantity }}</td>
+                            <td>{{ transaction.current_quantity }}</td>
+                            <td>{{ transaction.processed_by.username }}</td>
+                            <td>{{ transaction.notes|default:'' }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="9" class="text-center">No transactions found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if is_paginated %}
+            <div class="d-flex justify-content-between align-items-center mt-4">
+                <div class="d-flex align-items-center gap-2">
+                    <select class="form-select form-select-sm w-auto" onchange="updatePageSize(this.value)">
+                        <option value="10" {% if page_obj.paginator.per_page == 10 %}selected{% endif %}>10 rows</option>
+                        <option value="25" {% if page_obj.paginator.per_page == 25 %}selected{% endif %}>25 rows</option>
+                        <option value="50" {% if page_obj.paginator.per_page == 50 %}selected{% endif %}>50 rows</option>
+                        <option value="100" {% if page_obj.paginator.per_page == 100 %}selected{% endif %}>100 rows</option>
+                    </select>
+                    <span class="text-muted">
+                        Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ paginator.count }} entries
+                    </span>
+                </div>
+                
+                <nav aria-label="Page navigation">
+                    <ul class="pagination pagination-sm mb-0">
+                        {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if request.GET.supply_type %}&supply_type={{ request.GET.supply_type }}{% endif %}{% if request.GET.item_name %}&item_name={{ request.GET.item_name }}{% endif %}{% if request.GET.movement_type %}&movement_type={{ request.GET.movement_type }}{% endif %}{% if request.GET.date_from %}&date_from={{ request.GET.date_from }}{% endif %}{% if request.GET.date_to %}&date_to={{ request.GET.date_to }}{% endif %}" aria-label="First">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.supply_type %}&supply_type={{ request.GET.supply_type }}{% endif %}{% if request.GET.item_name %}&item_name={{ request.GET.item_name }}{% endif %}{% if request.GET.movement_type %}&movement_type={{ request.GET.movement_type }}{% endif %}{% if request.GET.date_from %}&date_from={{ request.GET.date_from }}{% endif %}{% if request.GET.date_to %}&date_to={{ request.GET.date_to }}{% endif %}">
+                                Previous
+                            </a>
+                        </li>
+                        {% endif %}
+
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}{% if request.GET.supply_type %}&supply_type={{ request.GET.supply_type }}{% endif %}{% if request.GET.item_name %}&item_name={{ request.GET.item_name }}{% endif %}{% if request.GET.movement_type %}&movement_type={{ request.GET.movement_type }}{% endif %}{% if request.GET.date_from %}&date_from={{ request.GET.date_from }}{% endif %}{% if request.GET.date_to %}&date_to={{ request.GET.date_to }}{% endif %}">
+                                        {{ num }}
+                                    </a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.supply_type %}&supply_type={{ request.GET.supply_type }}{% endif %}{% if request.GET.item_name %}&item_name={{ request.GET.item_name }}{% endif %}{% if request.GET.movement_type %}&movement_type={{ request.GET.movement_type }}{% endif %}{% if request.GET.date_from %}&date_from={{ request.GET.date_from }}{% endif %}{% if request.GET.date_to %}&date_to={{ request.GET.date_to }}{% endif %}">
+                                Next
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.supply_type %}&supply_type={{ request.GET.supply_type }}{% endif %}{% if request.GET.item_name %}&item_name={{ request.GET.item_name }}{% endif %}{% if request.GET.movement_type %}&movement_type={{ request.GET.movement_type }}{% endif %}{% if request.GET.date_from %}&date_from={{ request.GET.date_from }}{% endif %}{% if request.GET.date_to %}&date_to={{ request.GET.date_to }}{% endif %}" aria-label="Last">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            <script>
+                function updatePageSize(size) {
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('per_page', size);
+                    
+                    // Preserve all filter parameters
+                    const params = new URLSearchParams(window.location.search);
+                    ['supply_type', 'item_name', 'movement_type', 'date_from', 'date_to'].forEach(param => {
+                        if (params.has(param)) {
+                            url.searchParams.set(param, params.get(param));
+                        }
+                    });
+                    
+                    window.location.href = url.toString();
+                }
+            </script>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Transaction Details Modal -->
+<div class="modal fade" id="transactionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Transaction Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="transactionDetails"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function showTransactionDetails(id) {
+    fetch(`/api/transactions/${id}/`)
+        .then(response => response.json())
+        .then(data => {
+            const details = document.getElementById('transactionDetails');
+            // Populate modal with transaction details
+            details.innerHTML = `
+                <dl class="row">
+                    <dt class="col-sm-4">Date/Time</dt>
+                    <dd class="col-sm-8">${data.timestamp}</dd>
+                    // ... other fields ...
+                </dl>
+            `;
+            new bootstrap.Modal(document.getElementById('transactionModal')).show();
+        });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,33 @@
+# Core Dependencies
+Django==4.2.7
+djangorestframework==3.14.0
+django-cors-headers==4.3.0
+django-environ==0.11.2
+
+# Database
+psycopg2-binary==2.9.9
+
+# Image Processing
+Pillow==10.1.0
+
+# Environment & Configuration
+python-dotenv==1.0.0
+
+System-Requirements:
+Python>=3.8
+PostgreSQL>=12
+RAM>=4GB
+Storage>=1GB
+
+Development-Commands:
+pip-install-r-requirements.txt
+python-manage.py-runserver
+python-manage.py-migrate
+python-manage.py-createsuperuser
+python-manage.py-test
+
+Environment-Variables:
+DEBUG=True
+SECRET_KEY=your-secret-key
+DATABASE_URL=postgresql://user:password@localhost:5432/vetdb
+ALLOWED_HOSTS=localhost,127.0.0.1

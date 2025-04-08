@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-office border-0">
+                <div class="card-header bg-office-gradient text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0"><i class="fas fa-file-upload me-2"></i>Bulk Import Office Supplies</h4>
+                        <div class="dropdown">
+                            <button class="btn btn-light btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-download me-2"></i>Download Template
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'office_supplies:download-template' %}?format=xlsx">
+                                        <i class="fas fa-file-excel me-2"></i>Excel Template (.xlsx)
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'office_supplies:download-template' %}?format=csv">
+                                        <i class="fas fa-file-csv me-2"></i>CSV Template (.csv)
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h6 class="alert-heading"><i class="fas fa-info-circle me-2"></i>Instructions</h6>
+                        <ol class="mb-0">
+                            <li>Download the template in your preferred format</li>
+                            <li>Fill in your inventory data following the template format</li>
+                            <li>Save the file and upload it below</li>
+                        </ol>
+                    </div>
+                    
+                    <form method="post" enctype="multipart/form-data" class="mt-4">
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <label for="excel_file" class="form-label">Select File</label>
+                            <input type="file" class="form-control" id="excel_file" name="excel_file" accept=".xlsx,.csv" required>
+                            <div class="form-text">Supported formats: Excel (.xlsx), CSV (.csv)</div>
+                        </div>
+
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-upload me-2"></i>Import Data
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Tips</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Date Format</h6>
+                    <p class="small text-muted">Use DD/MM/YYYY format for dates (e.g., 31/12/2025)</p>
+                    
+                    <h6>Required Fields</h6>
+                    <ul class="small text-muted">
+                        <li>Name</li>
+                        <li>Category</li>
+                        <li>Quantity</li>
+                    </ul>
+                    
+                    <h6>Optional Fields</h6>
+                    <ul class="small text-muted">
+                        <li>Reorder Level (default: 10)</li>
+                        <li>Expiry Date</li>
+                        <li>Description</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.shadow-office {
+    box-shadow: 0 4px 24px rgba(43, 80, 170, 0.1);
+    border-radius: 12px;
+}
+
+.bg-office-gradient {
+    background: linear-gradient(135deg, #2b50aa, #3a6ea5);
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+}
+
+.dropdown-item:hover {
+    background-color: rgba(43, 80, 170, 0.1);
+}
+</style>
+{% endblock %}

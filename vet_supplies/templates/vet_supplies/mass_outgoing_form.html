@@ -1,0 +1,469 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load office_supplies_extras %}
+{% load vet_supplies_extras %}
+{% load form_tags %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <a href="javascript:history.back()" class="btn btn-outline-secondary hover-lift">
+            <i class="fas fa-arrow-left me-2"></i>Back
+        </a>
+        <h2 class="mb-0"><i class="fas fa-box-open me-2 text-vet"></i>New Outgoing Transaction</h2>
+    </div>
+
+    <!-- Form Card -->
+    <div class="card border-0 shadow-blur">
+        <div class="card-body p-4">
+            <form method="post" id="outgoingForm">
+                {% csrf_token %}
+                
+                <!-- Main Form -->
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger mb-4">
+                                {{ form.non_field_errors }}
+                            </div>
+                        {% endif %}
+                        {% for field in form %}
+                            {% if field.name == 'reason' %}
+                                <div class="form-group mb-3">
+                                    <label for="{{ field.id_for_label }}" class="form-label">
+                                        {{ field.label }}{% if field.field.required %} <span class="text-danger">*</span>{% endif %}
+                                    </label>
+                                    {{ field|add_class:"form-control"|attr:"aria-required:true" }}
+                                    {% if field.help_text %}
+                                        <small id="{{ field.id_for_label }}-help" class="form-text text-muted">{{ field.help_text }}</small>
+                                    {% endif %}
+                                    {% if field.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ field.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Items Formset -->
+                {{ formset.management_form }}
+                {% if formset.non_form_errors %}
+                    <div class="alert alert-danger">
+                        {{ formset.non_form_errors }}
+                    </div>
+                {% endif %}
+                <div id="formset-container">
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle" id="items-table">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>
+                                        <label class="form-label mb-0" for="id_items-0-supply">
+                                            Item <span class="text-danger" aria-hidden="true">*</span>
+                                        </label>
+                                    </th>
+                                    <th style="width: 150px;">
+                                        <label class="form-label mb-0" for="id_items-0-quantity">
+                                            Quantity <span class="text-danger" aria-hidden="true">*</span>
+                                        </label>
+                                    </th>
+                                    <th style="width: 50px;" aria-label="Actions"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="formset-row">
+                                    <td>
+                                        <select name="items-0-supply"
+                                                id="id_items-0-supply"
+                                                class="form-select"
+                                                required
+                                                aria-required="true">
+                                            <option value="">---------</option>
+                                            {% for choice in formset.empty_form.supply.field.choices %}
+                                                {% if choice.0 %}
+                                                    <option value="{{ choice.0 }}">{{ choice.1 }}</option>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="number"
+                                               name="items-0-quantity"
+                                               id="id_items-0-quantity"
+                                               class="form-control"
+                                               min="1"
+                                               required
+                                               aria-required="true">
+                                    </td>
+                                    <td></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Hidden empty form template -->
+                <template id="empty-form-template">
+                    <tr class="formset-row">
+                        <td>
+                            <select name="items-__prefix__-supply"
+                                    id="id_items-__prefix__-supply"
+                                    class="form-select"
+                                    required
+                                    aria-required="true">
+                                {% for choice in formset.empty_form.supply.field.choices %}
+                                    <option value="{{ choice.0 }}">{{ choice.1 }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td>
+                            <input type="number"
+                                   name="items-__prefix__-quantity"
+                                   id="id_items-__prefix__-quantity"
+                                   class="form-control"
+                                   min="1"
+                                   required
+                                   aria-required="true">
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-outline-danger remove-form">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </template>
+
+                <!-- Add Item Button -->
+                <button type="button" class="btn btn-outline-primary mb-4" id="add-form">
+                    <i class="fas fa-plus me-2"></i>Add Another Item
+                </button>
+
+                <!-- Submit Buttons -->
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="javascript:history.back()" class="btn btn-light border">Cancel</a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Save Transaction
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+:root {
+    --vet-primary: #2b7c85;
+    --vet-secondary: #37a7b5;
+    --vet-gradient: linear-gradient(135deg, #2b7c85, #37a7b5);
+}
+
+.shadow-blur {
+    box-shadow: 0 4px 24px rgba(43, 124, 133, 0.1);
+    border-radius: 12px;
+}
+
+.text-vet {
+    color: var(--vet-primary);
+}
+
+.form-control, .form-select {
+    border-radius: 0.5rem;
+    padding: 0.625rem 0.875rem;
+    border-color: #e0e5ec;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--vet-primary);
+    box-shadow: 0 0 0 0.25rem rgba(43, 124, 133, 0.25);
+}
+
+.btn {
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    padding: 0.5rem 1.25rem;
+    border-radius: 0.5rem;
+    transition: all 0.15s ease-in-out;
+}
+
+.btn-primary {
+    background: var(--vet-gradient);
+    border: none;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #37a7b5, #2b7c85);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(43, 124, 133, 0.2);
+}
+
+.btn-outline-primary {
+    border-color: var(--vet-primary);
+    color: var(--vet-primary);
+}
+
+.btn-outline-primary:hover {
+    background: var(--vet-gradient);
+    border-color: transparent;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(43, 124, 133, 0.2);
+}
+
+.btn-outline-danger:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.2);
+}
+
+.table thead th {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+    color: #4a5568;
+}
+
+.form-label {
+    font-weight: 500;
+    color: #4a5568;
+    margin-bottom: 0.5rem;
+}
+
+.invalid-feedback {
+    font-size: 0.875rem;
+    margin-top: 0.375rem;
+}
+
+.hover-lift {
+    transition: all 0.2s ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 15px rgba(43, 124, 133, 0.1);
+}
+
+.errorlist {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    color: var(--bs-danger);
+    font-size: 0.875rem;
+}
+
+.select2-container {
+    width: 100% !important;
+}
+
+.remove-form {
+    transition: all 0.2s;
+}
+
+.remove-form:hover {
+    transform: scale(1.1);
+}
+
+.avatar {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+}
+
+.bg-office-gradient {
+    background: linear-gradient(135deg, #1a73e8, #1557b0);
+}
+
+.bg-office {
+    background-color: #1a73e8;
+}
+
+.text-office {
+    color: #1a73e8;
+}
+
+.bg-office-soft {
+    background-color: rgba(26, 115, 232, 0.05);
+}
+
+.bg-office-reason {
+    background-color: rgba(26, 115, 232, 0.1);
+    color: #1a73e8;
+}
+
+.btn-office {
+    background-color: #1a73e8;
+    color: white;
+}
+
+.btn-office:hover {
+    background-color: #1557b0;
+    color: white;
+}
+
+.form-control, .form-select {
+    border-radius: 0.5rem;
+    padding: 0.625rem 0.875rem;
+    border-color: #e0e5ec;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #0061f2;
+    box-shadow: 0 0 0 0.25rem rgba(0, 97, 242, 0.25);
+}
+
+.form-label {
+    font-weight: 500;
+    color: #4a5568;
+    margin-bottom: 0.5rem;
+}
+
+.card {
+    border-radius: 1rem;
+    box-shadow: 0 0.25rem 1rem rgba(0, 97, 242, 0.08);
+}
+
+.table thead th {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+    color: #4a5568;
+}
+
+.btn {
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    padding: 0.5rem 1.25rem;
+    border-radius: 0.5rem;
+    transition: all 0.15s ease-in-out;
+}
+
+.btn-outline-danger {
+    transition: all 0.15s ease;
+}
+
+.btn-outline-danger:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0.25rem 0.75rem rgba(220, 53, 69, 0.2);
+}
+
+.invalid-feedback {
+    font-size: 0.875rem;
+    margin-top: 0.375rem;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const container = document.querySelector('#items-table tbody');
+    const addButton = document.querySelector('#add-form');
+    const formPrefix = 'items';
+    const totalForms = document.querySelector(`#id_${formPrefix}-TOTAL_FORMS`);
+    const initialForms = document.querySelector(`#id_${formPrefix}-INITIAL_FORMS`);
+    const minForms = document.querySelector(`#id_${formPrefix}-MIN_NUM_FORMS`);
+    const maxForms = document.querySelector(`#id_${formPrefix}-MAX_NUM_FORMS`);
+    const template = document.querySelector('#empty-form-template');
+    
+    let formCount = Math.max(1, container.getElementsByClassName('formset-row').length);
+    
+    // Initialize management form
+    if (totalForms) totalForms.value = formCount;
+    if (initialForms) initialForms.value = initialForms.value || '0';
+    if (minForms) minForms.value = minForms.value || '0';
+    if (maxForms) maxForms.value = maxForms.value || '1000';
+
+    function updateFormsetManagement() {
+        if (totalForms) totalForms.value = formCount;
+    }
+
+    function updateFormIndex(element, index) {
+        element.querySelectorAll('[name]').forEach(input => {
+            const name = input.getAttribute('name');
+            const newName = name.replace(new RegExp(`${formPrefix}-\\d+-`), `${formPrefix}-${index}-`);
+            input.setAttribute('name', newName);
+            if (input.id) {
+                input.id = input.id.replace(new RegExp(`${formPrefix}-\\d+-`), `${formPrefix}-${index}-`);
+            }
+        });
+    }
+
+    function renumberForms() {
+        const rows = Array.from(container.querySelectorAll('.formset-row'));
+        rows.forEach((row, index) => {
+            updateFormIndex(row, index);
+        });
+        formCount = rows.length;
+        updateFormsetManagement();
+    }
+
+    addButton.addEventListener('click', function(e) {
+        e.preventDefault();
+        const newForm = template.content.cloneNode(true);
+        const newRow = newForm.querySelector('.formset-row');
+        
+        newRow.innerHTML = newRow.innerHTML.replaceAll(
+            'items-__prefix__-',
+            `items-${formCount}-`
+        );
+        
+        container.appendChild(newRow);
+        formCount++;
+        if (totalForms) totalForms.value = formCount;
+        
+        setupRemoveButton(newRow.querySelector('.remove-form'));
+    });
+    
+    function setupRemoveButton(button) {
+        if (!button) return;
+        
+        button.addEventListener('click', function() {
+            if (formCount > 1) {
+                const row = button.closest('.formset-row');
+                row.remove();
+                renumberForms();
+            }
+        });
+    }
+
+    document.querySelectorAll('.remove-form').forEach(setupRemoveButton);
+
+    const form = document.getElementById('outgoingForm');
+    
+    form.addEventListener('submit', function(e) {
+        let isValid = true;
+        const requiredFields = form.querySelectorAll('[required]');
+        
+        // First remove any existing error messages
+        form.querySelectorAll('.invalid-feedback').forEach(feedback => {
+            feedback.remove();
+        });
+        form.querySelectorAll('.is-invalid').forEach(field => {
+            field.classList.remove('is-invalid');
+        });
+        
+        requiredFields.forEach(field => {
+            if (!field.value) {
+                isValid = false;
+                field.classList.add('is-invalid');
+                const feedback = document.createElement('div');
+                feedback.className = 'invalid-feedback';
+                feedback.textContent = 'This field is required';
+                field.parentNode.appendChild(feedback);
+            }
+        });
+        
+        if (!isValid) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+
+{% endblock %}

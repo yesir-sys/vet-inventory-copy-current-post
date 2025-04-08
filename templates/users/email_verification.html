@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        @media screen and (max-width: 600px) {
+            body {
+                padding: 10px !important;
+            }
+            .container {
+                padding: 15px !important;
+            }
+            .logo {
+                max-width: 120px !important;
+            }
+            .button {
+                width: 100% !important;
+                padding: 16px 0 !important;
+                font-size: 18px !important;
+            }
+            .text-content {
+                font-size: 15px !important;
+            }
+        }
+    </style>
+</head>
+<body style="margin:0;padding:20px;background:#f5f5f5;font-family:Arial,sans-serif;">
+    <div class="container" style="max-width:600px;margin:0 auto;background:white;border-radius:10px;padding:20px;box-shadow:0 0 10px rgba(0,0,0,0.1);">
+        <div style="text-align:center;padding:20px;">
+            <!-- Logo placeholder -->
+            <img class="logo" src="https://your-domain.com/logo.png" alt="MPVO Logo" style="max-width:150px;margin-bottom:20px;">
+            <h2 style="color:#1b4d53;margin:0;font-size:24px;font-weight:600;">Email Verification</h2>
+        </div>
+
+        <div style="background-color:#e8f6f7;border-radius:6px;padding:15px;margin-bottom:25px;">
+            <p style="margin:0;color:#2b7c85;font-size:15px;">
+                <strong>🔒 Security Notice:</strong> Please verify your email address to complete your registration.
+            </p>
+        </div>
+
+        <div class="text-content" style="color:#333333;font-size:16px;line-height:1.6;">
+            <p>Dear {{ user.username }},</p>
+            <p>Thank you for registering with MPVO Inventory System. To ensure the security of your account, please verify your email address by clicking the button below:</p>
+            
+            <div style="text-align:center;margin:35px 0;">
+                <a href="{{ verification_url }}" class="button" style="background:#1b4d53;color:white;padding:14px 35px;text-decoration:none;border-radius:5px;display:inline-block;font-weight:600;font-size:16px;transition:background 0.3s;min-width:200px;">Verify Email Address</a>
+            </div>
+
+            <p style="color:#666;font-size:14px;margin-bottom:25px;">This verification link will expire in 24 hours. If you did not create this account, please ignore this email.</p>
+            
+            <p style="color:#666;font-size:14px;">If the button doesn't work, copy and paste this link into your browser:</p>
+            <p style="background:#f5f5f5;padding:10px;border-radius:4px;word-break:break-all;font-size:14px;">{{ verification_url }}</p>
+        </div>
+
+        <div style="margin-top:40px;padding-top:20px;border-top:1px solid #eee;text-align:center;color:#666;font-size:12px;">
+            <p>&copy; 2024 MPVO Inventory System. All rights reserved.</p>
+            <p>Need help? Contact our support team at support@mpvo.com</p>
+        </div>
+    </div>
+</body>
+</html>

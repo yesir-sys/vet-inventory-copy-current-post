@@ -1,0 +1,36 @@
+node_modules/
+.DS_Store
+.env
+*.log
+dist/
+build/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/  # Add this line
+backup.json   # Add this line
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# Mac
+.DS_Store
+.AppleDouble
+.LSOverride

@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-container">
+        <div class="card auth-card animate-card">
+            <div class="card-body p-5">
+                <div class="text-center mb-4">
+                    <i class="fas fa-user-plus fa-3x text-primary mb-3"></i>
+                    <h4 class="auth-title">Create Account</h4>
+                    <p class="text-muted">Join MPVO Inventory System</p>
+                </div>
+
+                <form method="post" class="auth-form needs-validation" novalidate>
+                    {% csrf_token %}
+                    {% for field in form %}
+                    <div class="form-floating mb-3">
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text border-end-0">
+                                <i class="fas {% if 'username' in field.name %}fa-user{% elif 'email' in field.name %}fa-envelope{% else %}fa-lock{% endif %} text-muted"></i>
+                            </span>
+                            {{ field }}
+                            {% if 'password' in field.name %}
+                            <button class="btn btn-outline-secondary toggle-password" type="button">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            {% endif %}
+                        </div>
+                        {% if field.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ field.errors|striptags }}
+                        </div>
+                        {% endif %}
+                        {% if field.help_text %}
+                        <small class="form-text text-muted">{{ field.help_text }}</small>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+
+                    <button type="submit" class="btn btn-primary btn-lg w-100 mb-3 hover-lift">
+                        <i class="fas fa-user-plus me-2"></i>Create Account
+                    </button>
+                </form>
+
+                <div class="text-center mt-4">
+                    <p class="mb-0">Already have an account? 
+                        <a href="{% url 'login' %}" class="text-primary fw-bold hover-link">Sign In</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.auth-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.auth-container {
+    width: 100%;
+    max-width: 450px;
+    padding: 1.5rem;
+}
+
+.auth-card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    background: transparent;
+}
+
+.card-body {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+}
+
+.input-group-text {
+    background: transparent;
+    border-radius: 10px 0 0 10px;
+    border: 1px solid #dee2e6;
+}
+
+.form-control {
+    border-radius: 0 10px 10px 0;
+    height: 48px;
+    font-size: 1rem;
+    border-left: 0;
+}
+
+.form-control:focus {
+    border-color: #dee2e6;
+    box-shadow: none;
+    border-left: 0;
+}
+
+.hover-lift {
+    transition: all 0.3s ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(43, 124, 133, 0.2);
+}
+
+.hover-link {
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.hover-link:hover {
+    color: var(--bs-primary) !important;
+    text-decoration: underline;
+}
+
+.animate-card {
+    animation: slideIn 0.5s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const toggleButtons = document.querySelectorAll('.toggle-password');
+    
+    toggleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const passwordInput = this.previousElementSibling;
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            
+            // Toggle eye icon
+            const eyeIcon = this.querySelector('i');
+            eyeIcon.classList.toggle('fa-eye');
+            eyeIcon.classList.toggle('fa-eye-slash');
+        });
+    });
+});
+</script>
+{% endblock %}
