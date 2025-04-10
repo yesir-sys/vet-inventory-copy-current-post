@@ -27,7 +27,8 @@ def signup(request):
         if form.is_valid():
             user = form.save(commit=False)
             user.is_active = False
-            user.is_email_verified = False  # Explicitly set the field
+            user.is_email_verified = False
+            user.is_approved = True  # Automatically approve users
             user.save()
             send_verification_email(request, user)
             return render(request, 'users/verification_waiting.html')
@@ -87,9 +88,9 @@ def verify_email(request, uidb64, token):
 
     if user is not None and default_token_generator.check_token(user, token):
         user.is_email_verified = True
-        # Don't set is_active to True yet - wait for admin approval
+        user.is_active = True  # Activate user immediately after email verification
         user.save()
-        messages.success(request, 'Your email has been verified. Please wait for administrator approval to access your account.')
+        messages.success(request, 'Your email has been verified. You can now login to your account.')
     else:
         messages.error(request, 'Activation link is invalid or has expired!')
     

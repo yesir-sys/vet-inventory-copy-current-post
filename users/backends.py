@@ -13,8 +13,6 @@ class ApprovalBackend(ModelBackend):
                 # Regular user checks
                 if not user.is_email_verified:
                     raise PermissionDenied("Please verify your email address before logging in.")
-                if not user.is_approved:
-                    raise PermissionDenied("Your account is awaiting administrator approval.")
                 if not user.is_active:
                     raise PermissionDenied("Your account has been deactivated. Please contact the administrator.")
             return user
